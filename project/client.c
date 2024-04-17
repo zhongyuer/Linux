@@ -25,9 +25,25 @@
 #include <arpa/inet.h>
 #include <getopt.h>
 #include <libgen.h>
+#include <time.h>
+#include <sqlite3.h>
 
-int get_temperature(float *temp);
+#define LENTH 64
+
 static inline void print_usage(char *progname);
+int get_temperature(float *temp);
+int get_device(char *id);
+int get_time(char *ch);
+
+int sqlite_init_db();
+int sqlite_insert_data(char *id,float temp,char *time);
+int sqlite_check_data();
+int sqlite_get_data();
+int sqlite_delete_data();
+int sqlite_close_db();
+
+sqlite3*	db;
+
 
 int main(int argc,char **argv)
 {
@@ -44,10 +60,13 @@ int main(int argc,char **argv)
 	float                 temp;
 	int                   on;
 	int                   time;
+	char				  id[32];
+	char				  ch[64];
+	char				  buf_send[1024];
 
 	struct option  long_options[]=
 	{
-		{"daemon",no_argument,NULL,'b'},
+		{"daemon",no_argument,NULL,'d'},
 		{"ip",required_argument,NULL,'i'},
 		{"port",required_argument,NULL,'p'},
 		{"help",no_argument,NULL,'h'},
@@ -57,7 +76,7 @@ int main(int argc,char **argv)
 
 	progname=basename(argv[0]);
 
-	while((opt=getopt_long(argc,argv,"bi:p:ht:",long_options,NULL)) != -1)
+	while((opt=getopt_long(argc,argv,"di:p:ht:",long_options,NULL)) != -1)
 	{
 		switch(opt)
 		{
@@ -90,6 +109,7 @@ int main(int argc,char **argv)
 		print_usage(progname);
 		return -1;
 	}
+
  while(1)
  {
 	sleep(time);
@@ -117,7 +137,29 @@ int main(int argc,char **argv)
 		printf("get temperature failure: %s\n",strerror(errno));
 	    return -1;
 	}
-	sprintf(buf,"%f\n",temp);
+
+	if(get_device(id)<0)
+	{
+		printf("get device failure: %s\n",strerror(errno));
+		return -1;
+	}
+
+	if(get_time(ch)<0)
+	{
+		printf("get time failure: %s\n",strerror(errno));
+		return -1;
+	}
+
+	snprintf(buf,128,"%s;%f;%s\n",id,temp,ch);
+
+	sqlite_init_db();
+	sqlite_insert_data(id,temp,ch);
+//	sqlite_check_data();
+//	sqlite_get_data(buf_send);
+//	sqlite_delete_data();
+	int sqlite_close_db();
+
+
 	if(write(connfd,buf,strlen(buf))<0)
 	{
 		printf("write data to server [%s:%d] failure: %s\n",serv_ip,serv_port,strerror(errno));
@@ -140,13 +182,15 @@ int main(int argc,char **argv)
 	}
 	printf("read %d bytes data from server: %s\n",rv,buf);
 
+ }
+
 cleanup:
 	close(connfd);
- }
-return 0;
+	return 0;
 
 }
 
+/* 命令行参数解析 */
 static inline void print_usage(char *progname)
 {
 	printf("usage: %s [OPTION]...\n",progname);
@@ -162,6 +206,7 @@ static inline void print_usage(char *progname)
 	return ;
 }
 
+/*从ds18b20中获取温度*/
 int get_temperature(float *temp)	
 {	
 	int              fd=-1;
@@ -199,7 +244,6 @@ int get_temperature(float *temp)
 	}
 
 	snprintf(ds18b20_path,sizeof(ds18b20_path),"%s%s/w1_slave",W1_path,chip_sn);
-	printf("w1_path:%s\n",ds18b20_path);
 
 	fd=open(ds18b20_path,O_RDONLY);
 	if(fd<0)
@@ -214,7 +258,6 @@ int get_temperature(float *temp)
 		printf("read data from fd=%d failure: %s\n",fd,strerror(errno));
 		return -2;
 	}	
-	printf("buf: %s\n",buf);
 
 	ptr=strstr(buf,"t=");
 	if(!ptr)
@@ -232,4 +275,176 @@ int get_temperature(float *temp)
 
 	return 0;
  
+}
+
+/* 获取产品系列号 */
+int get_device(char *id)
+{
+	int		sn = 1;
+
+	snprintf(id,LENTH,"RPI%04d",sn);
+
+	return 0;
+}
+
+/* 获取时间 */
+int get_time(char *ch)
+{
+	time_t		tim;
+	struct tm	*p;
+	
+	time(&tim);
+	p = localtime(&tim);
+
+	snprintf(ch,LENTH,"%d-%d-%d %d:%d:%d",1900+p->tm_year,1+p->tm_mon,p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec);
+
+	return 0;
+}
+
+/*创建并打开数据库和表*/
+int sqlite_init_db()
+{
+	char	sql[128];
+	char	*errmsg = NULL;
+	int		ret = -1;
+
+	ret = sqlite3_open("cliDB.db",&db);
+	if(ret != SQLITE_OK)
+	{
+		printf("create database failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+
+		return -1;
+	}
+	else
+	{
+		memset(sql,0,sizeof(sql));
+		sprintf(sql,"CREATE TABLE IF NOT EXISTS cliTABLE(ID INTEGER PRIMARY KEY AUTOINCREMENT,SN TEXT,TEMP REAL,TIME TEXT)");
+		ret = sqlite3_exec(db,sql,0,0,&errmsg);
+		if(ret != SQLITE_OK)
+		{
+			printf("create table failure: %s\n",strerror(errno));
+			sqlite3_free(errmsg);
+
+			return -2;
+		}
+
+		return 0;
+	}
+}
+
+/*插入数据到数据库中的表*/
+int sqlite_insert_data(char *id,float temp,char *ch)
+{
+	char	sql[128];
+	char	*errmsg = NULL;
+	int		ret = -1;
+
+	sprintf(sql,"INSERT INTO cliTABLE (SN,TEMP,TIME) VALUES('%s','%f','%s')",id,temp,ch);
+	ret = sqlite3_exec(db,sql,0,0,&errmsg);
+	if(ret != SQLITE_OK)
+	{
+		printf("insert into table failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+
+		return -3;
+	}
+
+	return 0;
+}
+
+/*检查数据库中的表的数据*/
+int sqlite_check_data()
+{
+	char	sql[128];
+	int		ret = -1;
+	int		row = 0;
+	int		column = 0;
+	char	**result;
+	char	*errmsg = NULL;
+
+	memset(sql,0,sizeof(sql));
+	sprintf(sql,"SELECT * FROM cliTABLE");
+	ret = sqlite3_get_table(db,sql,&result,&row,&column,&errmsg);
+	if(ret != SQLITE_OK)
+	{
+		printf("check table data failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+	
+		return -4;
+	}
+	else if(row>0)
+	{
+		return row;
+	}
+	return 0;
+}
+
+/* 从数据库的表中获取数据 */
+int	sqlite_get_data(char *send_buf)
+{
+	char	sql[128];
+	int		ret = -1;
+	int		row = 0;
+	int		column = 0;
+	char	**result;
+	char	*errmsg = NULL;
+
+	memset(sql,0,sizeof(sql));
+	sprintf(sql,"SELECT * FROM cliTABLE LIMIT 1");
+	
+	ret = sqlite3_get_table(db,sql,&result,&row,&column,&errmsg);
+	if(ret != SQLITE_OK);
+	{
+		printf("get table data failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+
+		return -5;
+	}
+
+	sprintf(send_buf,"%s;%s;%s",result[1*column+1],result[1*column+2],result[1*column+3]);
+	printf("send_buf: %s\n",send_buf);
+
+	return 0;
+}
+
+/* 删除数据库中表的数据 */
+int sqlite_delete_data()
+{
+	char	sql[128];
+	int		ret = -1;
+	int		row = 0;
+	int		column = 0;
+	char	**result;
+	char	*errmsg = NULL;
+
+	memset(sql,0,sizeof(sql));
+	sprintf(sql,"DELETE FROM cliTABLE WHERE ROEID IN(SELECT ROWID FROM cliTABLE LIMIT 1);");
+	ret = sqlite3_exec(db,sql,0,0,&errmsg);
+	if(ret != SQLITE_OK)
+	{
+		printf("delete table data failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+
+		return -6;
+	}
+
+	return 0;
+}
+
+/* 关闭数据库 */
+int	sqlite_close_db()
+{
+	char	*errmsg = NULL;
+
+
+	if(db == NULL)
+	{
+		printf("close sqlite db failure: %s\n",sqlite3_errmsg(db));
+		sqlite3_free(errmsg);
+		
+		return -7;	
+	}
+
+	return 0;
 }
