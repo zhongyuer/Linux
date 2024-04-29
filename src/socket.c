@@ -21,18 +21,13 @@
 #include <sys/resource.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
-
 #include "socket.h"
 
 
-//int socket_init(socket_ctx_t *sock, char *host, int port)
-
 int socket_init(socket_ctx_t *sock, char *host, int port)
-{
-	if( !port <= 0 )
-		return -1;
-	memset(&sock, 0 , sizeof(sock));
-
+{	
+	memset(sock, 0 , sizeof(*sock));
+	
 	if(host != NULL)
 	{
 		strncpy(sock->host, host, HOSTNAME_LEN);
@@ -57,7 +52,7 @@ int socket_connect(socket_ctx_t *sock)
 		printf("create socket failure: %s\n",strerror(errno));
 		return -1;
 	}	 
-	printf("socket create fd[%d] seccessfully\n",sockfd);
+	//printf("socket create fd[%d] seccessfully\n",sockfd);
        
 	memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -67,7 +62,7 @@ int socket_connect(socket_ctx_t *sock)
 	ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 	if(ret <0 )
 	{
-		printf("connect to server [%s:%d] failure: %s\n",sock->host, sock->port, strerror(errno));
+		//printf("connect to server [%s:%d] failure: %s\n",sock->host, sock->port, strerror(errno));
 		close(sockfd);
 		return -1;
 	}
@@ -84,30 +79,30 @@ int socket_write(socket_ctx_t *sock, char *data)
 {
 	int			rv = 0;
 
-	if(write(sock->fd, data, sizeof(data)) < 0)
+	if(write(sock->fd, data, sizeof(*data)) < 0)
 	{
 		printf("write data to server [%s;%d] failure: %s\n",sock->host, sock->port,strerror(errno));
-		goto CleanUp;
+		close(sock->fd);
 	}
 	printf("write data to server: %s\n", data);
  	
-	memset(data,0,sizeof(data));
+	memset(data,0,sizeof(*data));
  	rv = read(sock->fd,data,sizeof(data));
  	if(rv < 0)
 	{
 		printf("read data from server failure: %s\n",strerror(errno));
-		goto CleanUp;
+		close(sock->fd);
 	}
 
 	else if(0 == rv)
 	{
 		printf("client connect to server get disconnected\n");
-		goto CleanUp;
+		close(sock->fd);
 	}
 	printf("read %d bytes data from server: %s\n", rv, data);
 
-CleanUp:
-	close(sock->fd);
+//CleanUp:
+//	close(sock->fd);
 }
 
 int	socket_net_status(socket_ctx_t *sock)
