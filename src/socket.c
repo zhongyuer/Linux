@@ -57,7 +57,7 @@ int socket_connect(socket_ctx_t *sock)
 		printf("create socket failure: %s\n",strerror(errno));
 		return -1;
 	}	 
-	printf("socket create fd[%d] seccessfully\n",sockfd);
+	//printf("socket create fd[%d] seccessfully\n",sockfd);
        
 	memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -67,7 +67,7 @@ int socket_connect(socket_ctx_t *sock)
 	ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 	if(ret <0 )
 	{
-		printf("connect to server [%s:%d] failure: %s\n",sock->host, sock->port, strerror(errno));
+		//printf("connect to server [%s:%d] failure: %s\n",sock->host, sock->port, strerror(errno));
 		close(sockfd);
 		return -1;
 	}
