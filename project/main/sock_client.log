@@ -1,0 +1,68 @@
+
+2024-05-07 11:18:24.953214  INFO  logger.c:159: logger system(v0.1) rollback: file:"sock_client.log", level:INFO, maxsize:10KiB
+
+2024-05-07 11:18:24.953337  INFO  client.c:218: row: 3
+2024-05-07 11:18:24.953745  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:18:15
+2024-05-07 11:18:24.954117  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:18:15
+2024-05-07 11:18:24.954193  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:18:24.985973  INFO  client.c:218: row: 2
+2024-05-07 11:18:24.986326  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:18:18
+2024-05-07 11:18:24.988817  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:18:18
+2024-05-07 11:18:24.988903  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:18:25.024461  INFO  client.c:218: row: 1
+2024-05-07 11:18:25.024808  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:18:21
+2024-05-07 11:18:25.024954  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:18:21
+2024-05-07 11:18:25.025024  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:18:27.923069  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:18:27
+2024-05-07 11:18:27.923147  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:18:27
+2024-05-07 11:18:30.881458  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:18:30
+2024-05-07 11:18:30.881563  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:18:30
+
+2024-05-07 11:19:34.683472  INFO  logger.c:122: logger system(v0.1) start: file:"sock_client.log", level:INFO, maxsize:10KiB
+
+2024-05-07 11:19:34.684190  INFO  socket.c:108: connect to server [127.0.0.1:8789] on fd[4] successfully
+2024-05-07 11:19:35.602257  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:35
+2024-05-07 11:19:35.602400  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:35
+2024-05-07 11:19:37.922222  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:37
+2024-05-07 11:19:37.922364  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:37
+2024-05-07 11:19:40.890516  INFO  client.c:187: network failure but insert data ok
+2024-05-07 11:19:43.928739  INFO  client.c:187: network failure but insert data ok
+2024-05-07 11:19:46.888680  INFO  client.c:187: network failure but insert data ok
+2024-05-07 11:19:49.930955  INFO  client.c:187: network failure but insert data ok
+2024-05-07 11:19:50.451933  INFO  socket.c:108: connect to server [127.0.0.1:8789] on fd[6] successfully
+2024-05-07 11:19:50.452211  INFO  client.c:218: row: 4
+2024-05-07 11:19:50.452379  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:40
+2024-05-07 11:19:50.452459  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:40
+2024-05-07 11:19:50.452502  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:19:50.468904  INFO  client.c:218: row: 3
+2024-05-07 11:19:50.469111  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:43
+2024-05-07 11:19:50.469386  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:43
+2024-05-07 11:19:50.469432  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:19:50.483322  INFO  client.c:218: row: 2
+2024-05-07 11:19:50.483532  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:46
+2024-05-07 11:19:50.483751  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:46
+2024-05-07 11:19:50.483794  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:19:50.497336  INFO  client.c:218: row: 1
+2024-05-07 11:19:50.497546  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:49
+2024-05-07 11:19:50.497817  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:49
+2024-05-07 11:19:50.497859  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:19:52.882183  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:19:52
+2024-05-07 11:19:52.882552  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:19:52
+
+2024-05-07 11:22:28.682832  INFO  logger.c:122: logger system(v0.1) start: file:"sock_client.log", level:INFO, maxsize:10KiB
+
+2024-05-07 11:22:28.683770  INFO  socket.c:108: connect to server [127.0.0.1:8789] on fd[4] successfully
+2024-05-07 11:22:29.522807  INFO  socket.c:129: write data to server: RIP:0001;24.812;2024-05-07 11:22:29
+2024-05-07 11:22:29.523044  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.812;2024-05-07 11:22:29
+2024-05-07 11:22:31.922230  INFO  socket.c:129: write data to server: RIP:0001;24.812;2024-05-07 11:22:31
+2024-05-07 11:22:31.922451  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.812;2024-05-07 11:22:31
+2024-05-07 11:22:34.893881  INFO  client.c:187: network failure but insert data ok
+2024-05-07 11:22:37.922364  INFO  socket.c:108: connect to server [127.0.0.1:8789] on fd[6] successfully
+2024-05-07 11:22:37.922633  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:22:37
+2024-05-07 11:22:37.924200  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:22:37
+2024-05-07 11:22:37.924686  INFO  client.c:218: row: 1
+2024-05-07 11:22:37.925137  INFO  socket.c:129: write data to server: RIP:0001;24.812;2024-05-07 11:22:34
+2024-05-07 11:22:37.939662  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.812;2024-05-07 11:22:34
+2024-05-07 11:22:37.939797  INFO  client.c:223: send sqlite data successfully
+2024-05-07 11:22:40.881485  INFO  socket.c:129: write data to server: RIP:0001;24.875;2024-05-07 11:22:40
+2024-05-07 11:22:40.882020  INFO  socket.c:144: read 1 bytes data from server: RIP:0001;24.875;2024-05-07 11:22:40

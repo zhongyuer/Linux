@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "ds18b20.h"
-
+#include "logger.h"
 int ds18b20_get_temperature(float *temp)
 {
 	int				fd = -1;
@@ -36,7 +36,7 @@ int ds18b20_get_temperature(float *temp)
 	dirp=opendir(W1_path);
 	if(!dirp)
 	{
-		printf("open folder %s failure: %s\n",W1_path,strerror(errno));
+		log_error("open folder %s failure: %s\n",W1_path,strerror(errno));
 		return -1;
 	}
 
@@ -53,7 +53,7 @@ int ds18b20_get_temperature(float *temp)
 
 	if(!found)
 	{
-		printf("can not find ds18b20 chipset\n");
+		log_error("can not find ds18b20 chipset\n");
 		return -2;
 	}
 
@@ -62,21 +62,21 @@ int ds18b20_get_temperature(float *temp)
 	fd=open(ds18b20_path,O_RDONLY);
 	if(fd<0)
 	{
-		printf("open file failure: %s\n",strerror(errno));
+		log_error("open file failure: %s\n",strerror(errno));
 		return -1;
 	}
 
 	memset(buf,0,sizeof(buf));
 	if(read(fd,buf,sizeof(buf))<0)
 	{
-		printf("read data from fd=%d failure: %s\n",fd,strerror(errno));
+		log_error("read data from fd[%d] failure: %s\n",fd,strerror(errno));
 		return -2;
 	}
 
 	ptr=strstr(buf,"t=");
 	if(!ptr)
 	{
-		printf("can not find t=strstr\n");
+		log_error("can not find t=strstr\n");
 		return -1;
 	}
 

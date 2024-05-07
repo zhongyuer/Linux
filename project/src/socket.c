@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include "socket.h"
-
+#include "logger.h"
 
 int socket_init(socket_ctx_t *sock, char *host, int port)
 {	
@@ -70,27 +70,28 @@ int socket_connect(socket_ctx_t *sock)
 	ch = getaddrinfo(sock->host, port_str, &hinst, &result);
 	if( ch != 0)
 	{
-		printf("analyze [%s,%s] failure: %s\n",sock->host, port_str, gai_strerror(errno));
+		log_error("analyze [%s,%s] failure: %s\n",sock->host, port_str, gai_strerror(errno));
 		return -1;
 	}
-	printf("analyze successfully\n");
+	log_debug("analyze successfully\n");
 
 	for(rp = result; rp != NULL; rp=rp->ai_next)
 	{
+#if 0
 		char				ipaddr[32];
 		struct sockaddr_in	*sp = (struct sockaddr_in *) rp->ai_addr;
 
 		memset(ipaddr,0, sizeof(ipaddr));
 		if( inet_ntop(AF_INET, &sp->sin_addr, ipaddr, sizeof(ipaddr)))
 		{
-			printf("domain name resolution [%s->%s]\n", sock->host, ipaddr);
+			log_info("domain name resolution [%s->%s]\n", sock->host, ipaddr);
 
 		}
-		
+#endif	
 		sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if(sockfd <0 )
 		{
-			printf("create socket failure: %s\n",gai_strerror(errno));
+			log_error("create socket failure: %s\n",gai_strerror(errno));
 			continue;
 		}
 	
@@ -104,9 +105,9 @@ int socket_connect(socket_ctx_t *sock)
 		else
 		{
 			sock->fd = sockfd;
-			printf("connect to server [%s:%d] on fd[%d] successfully\n", sock->host, sock->port, sockfd);
+			log_info("connect to server [%s:%d] on fd[%d] successfully\n", sock->host, sock->port, sockfd);
 			inet_ntop(rp->ai_family, rp->ai_addr, addr_str, sizeof(addr_str));
-			printf("IP address: %s\n", addr_str);
+			log_debug("IP address: %s\n", addr_str);
 			break;
 		}
 	}
@@ -122,25 +123,25 @@ int socket_write(socket_ctx_t *sock, char *data)
 
 	if(write(sock->fd, data, sizeof(*data)) < 0)
 	{
-		printf("write data to server [%s;%d] failure: %s\n",sock->host, sock->port,strerror(errno));
+		log_error("write data to server [%s;%d] failure: %s\n",sock->host, sock->port,strerror(errno));
 		close(sock->fd);
 	}
-	printf("write data to server: %s\n", data);
+	log_info("write data to server: %s\n", data);
  	
 	memset(data,0,sizeof(*data));
  	rv = read(sock->fd,data,sizeof(data));
  	if(rv < 0)
 	{
-		printf("read data from server failure: %s\n",strerror(errno));
+		log_error("read data from server failure: %s\n",strerror(errno));
 		close(sock->fd);
 	}
 
 	else if(0 == rv)
 	{
-		printf("client connect to server get disconnected\n");
+		log_info("client connect to server get disconnected\n");
 		close(sock->fd);
 	}
-	printf("read %d bytes data from server: %s\n", rv, data);
+	log_info("read %d bytes data from server: %s\n", rv, data);
 
 //CleanUp:
 //	close(sock->fd);
@@ -170,5 +171,5 @@ void set_socket_rlimit(void)
 	limit.rlim_cur = limit.rlim_max;
 	setrlimit(RLIMIT_NOFILE, &limit);
 
-	printf("set socket open fd max count to %d\n", limit.rlim_max);
+	log_info("set socket open fd max count to %d\n", limit.rlim_max);
 }

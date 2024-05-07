@@ -15,36 +15,35 @@
 #include <string.h>
 #include <errno.h>
 #include "database.h"
-
-sqlite3	*db;
-
+#include "logger.h"
 
 /*创建数据库、创建表*/
 sqlite3* sqlite_init_db()
 {
 	char	sql[128];
+	sqlite3* db=NULL;
 	char	*errmsg = NULL;
 	int		ret = -1;
 
-	ret = sqlite3_open("cliDB.db",&db);
+	ret = sqlite3_open("cliDB.db", &db);
 	if(ret != SQLITE_OK)
 	{
-		printf("create database failure: %s\n",sqlite3_errmsg(db));
+		log_error("create database failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
 
-		return 0;
+		return NULL;
 	}
 	else
 	{
 		memset(sql,0,sizeof(sql));
-		sprintf(sql,"CREATE TABLE IF NOT EXISTS cliTABLE(ID INTEGER PRIMARY KEY AUTOINCREMNT,SN TEXT,TEMP REAL TIME TEXT)");
+		sprintf(sql,"CREATE TABLE IF NOT EXISTS cliTABLE(ID INTEGER PRIMARY KEY AUTOINCREMENT, SN TEXT, TEMP REAL, TIME TEXT)");
 		ret = sqlite3_exec(db,sql,0,0,&errmsg);
 		if(ret != SQLITE_OK)
 		{
-			printf("create table failure: %s\n",strerror(errno));
+			log_error("create table failure: %s\n",sqlite3_errmsg(db));
 			sqlite3_free(errmsg);
 
-			return 0;
+			return NULL;
 		}
 
 		return db;
@@ -52,17 +51,17 @@ sqlite3* sqlite_init_db()
 }
 
 /*插入数据到数据库的表中*/
-int sqlite_insert_data(char *id,float temp,char *ch)
+int sqlite_insert_data(char *id, float temp, char *time, sqlite3 *db)
 {
 	char	sql[128];
 	char	*errmsg = NULL;
 	int		ret = -1;
 
-	sprintf(sql,"INSERT INTO cliTABLE (SN,TEMP,TIME) VALUES('%s','%f','%s')",id,temp,ch);
+	sprintf(sql,"INSERT INTO cliTABLE (SN,TEMP,TIME) VALUES('%s',%f,'%s')", id, temp, time);
 	ret = sqlite3_exec(db,sql,0,0,&errmsg);
 	if(ret != SQLITE_OK)
 	{
-		printf("insert into table failure: %s",sqlite3_errmsg(db));
+		log_error("insert into table failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
 
 		return -3;
@@ -86,8 +85,9 @@ int sqlite_check_data(sqlite3* db)
 	ret = sqlite3_get_table(db,sql,&result,&row,&column,&errmsg);
 	if(ret != SQLITE_OK)
 	{
-		printf("check table data failure: %s\n",sqlite3_errmsg(db));
+		log_error("check table data failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
+		sqlite3_free_table(result);
 
 		return -4;
 	}
@@ -97,11 +97,11 @@ int sqlite_check_data(sqlite3* db)
 		return row;
 	}
 
-	return 0;
+	//return 0;
 }
 
 /* 从数据库的表中获取数据 */
-int sqlite_get_data(sqlite3* db,char *send_buf)
+int sqlite_get_data(sqlite3* db, char *send_buf)
 {
 	char	sql[128];
 	int		ret = -1;
@@ -116,13 +116,13 @@ int sqlite_get_data(sqlite3* db,char *send_buf)
 	ret = sqlite3_get_table(db,sql,&result,&row,&column,&errmsg);
 	if(ret != SQLITE_OK)
 	{
-		printf("get table data failure: %s\n",sqlite3_errmsg(db));
+		log_error("get table data failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
 
 		return -5;
 	}	
 	sprintf(send_buf,"%s;%s;%s",result[1*column+1],result[1*column+2],result[1*column+3]);
-	printf("send_buf: %s\n",send_buf);
+	log_debug("send_buf: %s\n",send_buf);
 
 	return 0;
 }
@@ -138,11 +138,11 @@ int sqlite_delete_data(sqlite3* db)
 	char	*errmsg = NULL;
 
 	memset(sql,0,sizeof(sql));
-	sprintf(sql,"DELETE FROM cliTABLE WHERE ROEID IN(SELECT ROWID FROM cliTABLE LIMIT 1);");
+	sprintf(sql,"DELETE FROM cliTABLE WHERE ID IN(SELECT ID FROM cliTABLE LIMIT 1);");
 	ret = sqlite3_exec(db,sql,0,0,&errmsg);
 	if(ret != SQLITE_OK)
 	{
-		printf("delete table data failure: %s\n",sqlite3_errmsg(db));
+		log_error("delete table data failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
 
 		return -6;
@@ -157,7 +157,7 @@ int sqlite_close_db(sqlite3* db)
 
 	if(db == NULL)
 	{
-		printf("close sqlite db failure: %s\n",sqlite3_errmsg(db));
+		log_error("close sqlite db failure: %s\n",sqlite3_errmsg(db));
 		sqlite3_free(errmsg);
 
 		return -7;

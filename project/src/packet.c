@@ -13,11 +13,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-
-
 #include "packet.h"
 #include "ds18b20.h"
+#include "logger.h"
 
 int get_device(char *devid, int size)
 {
@@ -25,7 +23,7 @@ int get_device(char *devid, int size)
 
 	if( !devid || size< DEVID_LEN )
 	{
-		printf("Invalid input arugment\n");
+		log_error("Invalid input arugment\n");
 		return -1;
 	}
 
@@ -56,7 +54,7 @@ int pack_data(pack_info_t *pack_info, char *pack_buf, int size)
 	char	*buf = pack_buf;
 
 	memset(buf,0,size);
-	snprintf(buf,size,"%s;%s;%.3f",pack_info->devid, pack_info->sample_time, pack_info->temperature);
+	snprintf(buf,size,"%s;%.3f;%s", pack_info->devid, pack_info->temperature, pack_info->sample_time);
 
 	return strlen(buf);
 }
