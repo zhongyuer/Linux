@@ -164,14 +164,10 @@ int main(int argc,char **argv)
 			}
 			log_debug("time: %s\n",pack_info.sample_time);
 
-			/* 把数据库打包成结构体 */
-			pack_data(&pack_info, pack_buf, sizeof(pack_buf));
-			log_debug("pack_buf: %s\n", pack_buf);
-	
 			last_time = now_time;
 			sample_flag = 1;
 		}
-		
+	
 		/* 判断socket是否连接 */
 		if( socket_net_status(&sock) == -1 ) 
 		{
@@ -183,7 +179,7 @@ int main(int argc,char **argv)
 		{
 			if( sample_flag )
 			{	
-				sqlite_insert_data(pack_info.devid, pack_info.temperature, pack_info.sample_time, db);//把数据写到数据库
+				sqlite_insert_data(db, &pack_info);//把数据写到数据库
 				log_info("network failure but insert data ok\n");
 				sample_flag = 0;
 			}
@@ -195,13 +191,17 @@ int main(int argc,char **argv)
 		
 		if( sample_flag )
 		{
+			/*  把数据库打包成结构体 */
+			pack_data(&pack_info, pack_buf, sizeof(pack_buf));
+			log_debug("pack_buf: %s\n", pack_buf);
+			
 			/* 发送采样数据 */
-			rv = socket_write(&sock, pack_buf);
+			rv = socket_write(&sock, pack_buf, strlen(pack_buf));
 
 			if( rv < 0 ) //发送失败
 			{
 				log_error("socket write sample data failure: %s\n",strerror(errno));
-				sqlite_insert_data(pack_info.devid, pack_info.temperature, pack_info.sample_time, db); //数据写入数据库
+				sqlite_insert_data(db, &pack_info); //数据写入数据库
 				log_warn("write failure but insert data OK\n");
 				log_debug("insert data: %s\n",pack_buf);
 			}
@@ -215,9 +215,9 @@ int main(int argc,char **argv)
 		if( row >0 )
 		{
 			/* 发送数据库数据 */
-			log_info("row: %d\n",row);
+			log_debug("row: %d\n",row);
 			sqlite_get_data(db, send_buf); //提取一条数据
-			rv = socket_write(&sock, send_buf); //发送数据
+			rv = socket_write(&sock, send_buf, strlen(send_buf)); //发送数据
 			if( rv == 0 )
 			{
 				log_info("send sqlite data successfully\n");
