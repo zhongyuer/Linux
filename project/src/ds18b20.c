@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "ds18b20.h"
 #include "logger.h"
+
 int ds18b20_get_temperature(float *temp)
 {
 	int				fd = -1;
