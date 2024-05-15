@@ -26,7 +26,7 @@ typedef struct socket_ctx_s
 
 extern int socket_init(socket_ctx_t *sock, char *host, int port);
 extern int socket_connect(socket_ctx_t *sock);
-extern int socket_write(socket_ctx_t *sock, char *data);
+extern int socket_write(socket_ctx_t *sock, char *data, int size);
 extern int socket_close(socket_ctx_t *sock);
 extern int socket_net_status(socket_ctx_t *sock);
 extern void set_socket_rlimit(void);

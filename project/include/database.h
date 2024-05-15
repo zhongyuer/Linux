@@ -13,9 +13,10 @@
 
 #ifndef DATABASE_H
 #define DATABASE_H
+#include "packet.h" 
 
 sqlite3* sqlite_init_db();
-int sqlite_insert_data(char *id,float temp,char *time,sqlite3 *db);
+int sqlite_insert_data(sqlite3 *db, pack_info_t *pack_info);
 int sqlite_check_data(sqlite3*db);
 int sqlite_get_data(sqlite3* db,char *send_buf);
 int sqlite_delete_data(sqlite3* db);
