@@ -15,6 +15,7 @@
 #include <string.h>
 #include <errno.h>
 #include "database.h"
+#include "packet.h"
 #include "logger.h"
 
 /*创建数据库、创建表*/
@@ -51,13 +52,13 @@ sqlite3* sqlite_init_db()
 }
 
 /*插入数据到数据库的表中*/
-int sqlite_insert_data(char *id, float temp, char *time, sqlite3 *db)
+int sqlite_insert_data(sqlite3* db, pack_info_t *pack_info)
 {
 	char	sql[128];
 	char	*errmsg = NULL;
 	int		ret = -1;
 
-	sprintf(sql,"INSERT INTO cliTABLE (SN,TEMP,TIME) VALUES('%s',%f,'%s')", id, temp, time);
+	sprintf(sql,"INSERT INTO cliTABLE (SN, TEMP, TIME) VALUES('%s', '%.3f', '%s')", pack_info->devid, pack_info->temperature, pack_info->sample_time);
 	ret = sqlite3_exec(db,sql,0,0,&errmsg);
 	if(ret != SQLITE_OK)
 	{
@@ -81,7 +82,7 @@ int sqlite_check_data(sqlite3* db)
 	char	*errmsg = NULL;
 
 	memset(sql,0,sizeof(sql));
-	sprintf(sql,"SELECT * FROM cliTABLE");
+	sprintf(sql,"SELECT * FROM cliTABLE LIMIT 1");
 	ret = sqlite3_get_table(db,sql,&result,&row,&column,&errmsg);
 	if(ret != SQLITE_OK)
 	{

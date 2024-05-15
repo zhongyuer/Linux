@@ -117,31 +117,23 @@ int socket_connect(socket_ctx_t *sock)
 }
 
 
-int socket_write(socket_ctx_t *sock, char *data)
+int socket_write(socket_ctx_t *sock, char *data, int size)
 {
 	int			rv = 0;
+	int			total = 0;
 
-	if(write(sock->fd, data, sizeof(*data)) < 0)
+	while(total < size)
 	{
-		log_error("write data to server [%s;%d] failure: %s\n",sock->host, sock->port,strerror(errno));
-		close(sock->fd);
+		if((rv = write(sock->fd, data + total, size - total)) < 0)
+		{
+			log_error("write data to server [%s;%d] failure: %s\n",sock->host, sock->port,strerror(errno));
+			close(sock->fd);
+		}
+		log_info("write data to server: %s\n", data+total);
+		
+		total += rv;
 	}
-	log_info("write data to server: %s\n", data);
- 	
-	memset(data,0,sizeof(*data));
- 	rv = read(sock->fd,data,sizeof(data));
- 	if(rv < 0)
-	{
-		log_error("read data from server failure: %s\n",strerror(errno));
-		close(sock->fd);
-	}
-
-	else if(0 == rv)
-	{
-		log_info("client connect to server get disconnected\n");
-		close(sock->fd);
-	}
-	log_info("read %d bytes data from server: %s\n", rv, data);
+	return 0;
 
 //CleanUp:
 //	close(sock->fd);
