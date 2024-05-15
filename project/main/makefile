@@ -24,5 +24,3 @@ clean:
 
 client_run:
 	export LD_LIBRARY_PATH=/home/iot24/zhongyue/project/client/lib/ && ./client -i127.0.0.1 -p8789 -t5
-	
-

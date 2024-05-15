@@ -34,6 +34,7 @@
 #include "packet.h"
 #include "database.h"
 #include "logger.h"
+#include "mysignal.h"
 
 //#define LENTH 64
 
@@ -76,12 +77,13 @@ int main(int argc,char **argv)
 		{"port",required_argument,NULL,'p'},
 		{"help",no_argument,NULL,'h'},
 		{"invertal",required_argument,NULL,'t'},
+		{"debug",no_argument,NULL,'g'},
 		{NULL,0,NULL,0}
 	};
 
 	progname=basename(argv[0]);
 
-	while((opt=getopt_long(argc,argv,"di:p:ht:",long_options,NULL)) != -1)
+	while((opt=getopt_long(argc,argv,"di:p:ht:g",long_options,NULL)) != -1)
 	{
 		switch(opt)
 		{
@@ -104,6 +106,11 @@ int main(int argc,char **argv)
 			case't':
 				interval = atoi(optarg);
 				break;
+			case'g':
+				daemon_run = 0;
+				logfile="console";
+				loglevel=LOG_LEVEL_DEBUG;
+				break;
 
 			defalt:
 				break;
@@ -122,6 +129,15 @@ int main(int argc,char **argv)
 		return -1;
 	}
 
+	if(daemon_run)
+	{
+		if( daemon(1, 0) < 0 )
+		{
+			printf("running daemon failure: %s\n", strerror(errno));
+			return 0;
+		}
+	}
+
 	socket_init(&sock, serv_ip, serv_port);
 	socket_connect(&sock);
 
@@ -134,7 +150,10 @@ int main(int argc,char **argv)
 	log_debug("sqlite initiallize OK!\n");
 	//log_debug("interval: %d\n",interval);
 
-	while(1)
+	/* 安装错误信号 */
+	install_signal();
+
+	while( !g_signal)
 	{
 		/* 采样时间到了 */
 		time(&now_time);
@@ -241,7 +260,8 @@ static inline void print_usage(char *progname)
     log_info("-p[--port] socket server port address\n");
     log_info("-i[--ip] socket server ip address\n");
     log_info("-h[--help] display this help imformation\n");
-    log_info("-t[--time] the time between the reported data");
+    log_info("-t[--time] the time between the reported data\n");
+	log_info("-g[--debug] running in debug mode\n");
 
     log_info("\nExample: %s  -i 192.168.0.1 -p 8889 -t 5\n",progname);
     return ;
