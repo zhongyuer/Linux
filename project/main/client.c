@@ -85,7 +85,7 @@ int main(int argc,char **argv)
 	{
 		switch(opt)
 		{
-			case'b':
+			case'd':
 				daemon_run = 1;
 				break;
 
