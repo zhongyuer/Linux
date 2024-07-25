@@ -1,12 +1,15 @@
-- 👋 Hi, I’m @zhongyuer
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
-
-<!---
-zhongyuer/zhongyuer is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+#Linux
+基于ds18b20温度传感器实现温度上报
+具体实现的功能：
+（1）客户器端：
+1、连接服务器的主机名和端口号可以通过命令行参数修改；
+2、客户端程序需要定时（如30分钟）采样上报一次数据，该时间也可以通过命令行参数来调整；
+3、客户端上报数据包含设备序列号、采样时间、采样温度值，并以字符串形式上报；
+4、如果网络socket异常（如网络断线、服务器端退出）在网络故障恢复后，客户端程序能够自动重连；
+5、在网络故障出错期间，定时采样能正常进行。在此期间所有采样的数据临时存储到SQLite数据库中；
+6、网络故障恢复后，客户端程序自动将之前暂存到数据库中的数据上报到服务器上去，并从里面删除。
+（2）服务器端：
+1、服务器端程序要能够通过命令行制定该程序监听端口；
+2、服务器端要采用多进程，多线程或多路复用（select、poll、epoll）等机制中的某一种（用了epoll）实现多客户端并发上报；
+3、服务器端在接收客户端上报的数据并解析成功之后，应该将数据永久存储到数据库中，其中数据库可以采用sqlite或mysql数据库；
+4、服务器程序要做多客户端的压力测试，我们可以在PC上写一个客户端程序模拟客户上报数据，然后使用shell脚本同时启用100个客户端来测试服务器程序；
